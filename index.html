@@ -1,156 +1,167 @@
-MSVrYsiijLHL8KB70uetu6pHK<script src="microgear.js"></script>
+<!DOCTYPE html>
+<html>	
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no, width=device-width">
+		<title>NETPIE Freeboard</title>
+		<meta name="mobile-web-app-capable" content="yes">
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<meta name="apple-mobile-web-app-status-bar-style" content="black" />
+		<meta name="viewport" content = "width = device-width, initial-scale = 1, user-scalable = no" />
+		<link href="css/netpie.plugins.css" rel="stylesheet" />
+		<link href="css/freeboard.css" rel="stylesheet" />
+		<script src="js/freeboard.thirdparty.js"></script>
+		<script type="text/javascript">
+			head.js(
+					"js/freeboard_plugins.js",
+					"js/netpie.global.js",
+					"js/netpie.plugin.microgear.js",
+					"js/netpie.plugin.feed.js",
+					"js/netpie.widget.button.js",
+					"js/netpie.widget.feedview.js",
+					"js/netpie.widget.toggle.js",
+					"js/netpie.widget.slider.js",
+					// *** Load more plugins here ***
+					function(){
+						$(function()
+						{ //DOM Ready
+							freeboard.initialize(true);
+							var dashboardPattern = window.localStorage.getItem("netpie.freeboard.dashboard");
+							if (dashboardPattern !== null) {
+								dashboardPattern=JSON.parse(dashboardPattern);
+								freeboard.loadDashboard(dashboardPattern, function() {
+									freeboard.setEditing(false);
+								});
+							}
+						});
 
-<style>
+					});
+		</script>
+	</head>
+	<body ng-app="starter">
+		<div id="board-content">
+			<img id="dash-logo" data-bind="attr:{src: header_image}, visible:header_image()">
+			<div class="gridster responsive-column-width">
+				<ul data-bind="grid: true">
+				</ul>
+			</div>
+		</div>
+		<header id="main-header" data-bind="if:allow_edit">
+			<div id="admin-bar">
+				<div id="admin-menu">
+					<div id="board-tools">
+						<h1 id="board-logo" class="title bordered"><img class="logo-netpie" valign="middle"> NETPIE Freeboard</h1>
+						<div id="board-actions">
+							<ul class="board-toolbar vertical">
+								<li data-bind="click: loadDashboardFromLocalFile">
+									<i id="full-screen-icon" class="icon-folder-open icon-white"></i>
+									<label id="full-screen">Import</label>
+								</li>
+								<li data-bind="click: saveDashboard" data-pretty="true">
+									<i class="icon-download-alt icon-white"></i>
+									<label >Export</label>
+								</li>
+								<li data-bind="click: clearFreeboard">
+									<i class="icon-folder-close icon-white"></i>
+									<label >Reset</label>
+								</li>
+								<li id="add-pane" data-bind="click: createPane"><i class="icon-plus icon-white"></i><label>Add Pane</label></li>
+							</ul>
+						</div>
+					</div>
+					<div id="datasources">
+						<h2 class="title">DATASOURCES</h2>
 
-body {
-	text-align: center;
-}
+						<div class="datasource-list-container">
+							<table class="table table-condensed sub-table" id="datasources-list" data-bind="if: datasources().length">
+								<thead>
+								<tr>
+									<th>Name</th>
+									<th>Last Updated</th>
+									<th>&nbsp;</th>
+								</tr>
+								</thead>
+								<tbody data-bind="foreach: datasources">
+								<tr>
+									<td>
+										<span class="text-button datasource-name" data-bind="text: name, pluginEditor: {operation: 'edit', type: 'datasource'}"></span>
+									</td>
+									<td data-bind="text: last_updated"></td>
+									<td>
+										<ul class="board-toolbar">
+											<li data-bind="click: updateNow"><i class="icon-refresh icon-white"></i></li>
+											<li data-bind="pluginEditor: {operation: 'delete', type: 'datasource'}">
+												<i class="icon-trash icon-white"></i></li>
+										</ul>
+									</td>
+								</tr>
+								</tbody>
+							</table>
+						</div>
+						<span class="text-button table-operation" data-bind="pluginEditor: {operation: 'add', type: 'datasource'}">ADD</span>
+					</div>
+				</div>
+				<div class="theme-toggle" >
+					<input type="checkbox" name="toggle" class="theme-toggle-checkbox" id="theme-toggle" onclick="toggletheme()">
+						<label class="theme-toggle-label" for="theme-toggle">
+						<span class="theme-toggle-inner" ontext="" offtext="" id="theme-toggle_inner"></span>
+						<span class="theme-toggle-switch"></span>
+					</label>
+				</div>
+			</div>
+			<div id="column-tools" class="responsive-column-width">
+				<ul class="board-toolbar left-columns">
+					<li class="column-tool add" data-bind="click: addGridColumnLeft"><span class="column-icon right"></span><i class="icon-arrow-left icon-white"></i></li>
+					<li class="column-tool sub" data-bind="click: subGridColumnLeft"><span class="column-icon left"></span><i class="icon-arrow-right icon-white"></i></li>
+				</ul>
+				<ul class="board-toolbar right-columns">
+					<li class="column-tool sub" data-bind="click: subGridColumnRight"><span class="column-icon right"></span><i class="icon-arrow-left icon-white"></i></li>
+					<li class="column-tool add" data-bind="click: addGridColumnRight"><span class="column-icon left"></span><i class="icon-arrow-right icon-white"></i></li>
+				</ul>
+			</div>
+			<div id="toggle-header" data-bind="click: toggleEditing">
+				<i id="toggle-header-icon" class="icon-wrench icon-white"></i></div>
+		</header>
 
-/* SWITCH */
-.cube-switch {
-    border-radius:10px;
-    border:1px solid rgba(0,0,0,0.4);
-    box-shadow: 0 0 8px rgba(0,0,0,0.6), inset 0 100px 50px rgba(255,255,255,0.1);
-    /* Prevents clics on the back */
-    cursor:default;    
-    display: none;
-    height: 75px;
-    position: relative;
-    overflow:hidden;
-    /* Prevents clics on the back */
-    pointer-events:none;
-    width: 75px;
-    white-space: nowrap;
-    background:#333;
-	margin: 15px;
-}
+		<div style="display:hidden">
+			<ul data-bind="template: { name: 'pane-template', foreach: panes}">
+			</ul>
+		</div>
 
-/* The switch */
-.cube-switch .switch {
-    border:1px solid rgba(0,0,0,0.6);
-    border-radius:0.7em;
-    box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.3),
-    inset 0 -7px 0 rgba(0,0,0,0.2),
-    inset 0 50px 10px rgba(0,0,0,0.2),
-    0 1px 0 rgba(255,255,255,0.2);
-    display:block;
-    width: 60px;
-    height: 60px;
-    margin-left:-30px;
-    margin-top:-30px;
-    position:absolute;
-    top: 50%;
-    left: 50%;
-    width: 60px;
- 
-    background:#666;
-    transition: all 0.2s ease-out;
-
-    /* Allows click */
-    cursor:pointer;
-    pointer-events:auto;
-}
-
-/* SWITCH Active State */
-.cube-switch.active {
-    /*background:#222;
-    box-shadow:
-    0 0 5px rgba(0,0,0,0.5),
-    inset 0 50px 50px rgba(55,55,55,0.1);*/
-}
-
-.cube-switch.active .switch {
-    background:#333;
-    box-shadow:
-    inset 0 6px 0 rgba(255,255,255,0.1),
-    inset 0 7px 0 rgba(0,0,0,0.2),
-    inset 0 -50px 10px rgba(0,0,0,0.1),
-    0 1px 0 rgba(205,205,205,0.1);
-}
-
-.cube-switch.active:after,
-.cube-switch.active:before {
-    background:#333; 
-    box-shadow:
-    0 1px 0 rgba(255,255,255,0.1),
-    inset 1px 2px 1px rgba(0,0,0,0.5),
-    inset 3px 6px 2px rgba(200,200,200,0.1),
-    inset -1px -2px 1px rgba(0,0,0,0.3);
-}
-
-.cube-switch.active .switch:after,
-.cube-switch.active .switch:before {
-    background:#222;
-    border:none;
-    margin-top:0;
-    height:1px;
-}
-
-.cube-switch .switch-state {
-    display: block;
-    position: absolute;
-    left: 40%;
-    color: #FFF;
-
-    font-size: .5em;
-    text-align: center;
-}
-
-/* SWITCH On State */
-.cube-switch .switch-state.on {
-    bottom: 15%;
-}
-
-/* SWITCH Off State */
-.cube-switch .switch-state.off {
-    top: 15%;
-}
-
-</style>
-
-<script>
-	const APPKEY = "iwGmWVjModXAkVu";
-	const APPSECRET = "MSVrYsiijLHL8KB70uetu6pHK";
-	const APPID = "NickysHome";
-
-	var microgear = Microgear.create({
-		gearkey: APPKEY,
-		gearsecret: APPSECRET
-	});
-
-	function switchPress(){
-		if(document.getElementById("cube-switch").className == "cube-switch active"){
-			microgear.chat("pieplug","OFF");
-		}else if(document.getElementById("cube-switch").className == "cube-switch"){
-			microgear.chat("pieplug","ON");
-		}
-	}
-
-	microgear.on('message', function(topic,data) {
-		if(data=="ON"){
-			document.getElementById("cube-switch").className = "cube-switch active";
-		}else if(data=="OFF"){
-			document.getElementById("cube-switch").className = "cube-switch";
-		}
-	});
-
-	microgear.on('connected', function() {
-		microgear.setname('controllerplug');
-		document.getElementById("cube-switch").className = "cube-switch active";
-		document.getElementById("cube-switch").style.display = "block";
-	});
-	microgear.resettoken();
-	microgear.connect(APPID);
-	
-</script>
-<div style="margin: 20px;"><img src="img/nectec_logo.png" style="vertical-align:bottom;width:150px;hight:35px;"></div>
-<center>
-	<div href="" class="cube-switch" id="cube-switch" onclick="switchPress()">
-		<span class="switch">
-			<span class="switch-state off">Off</span>
-			<span class="switch-state on">On</span>
-		</span>
-	</div>
-</center>
-</div>
+		<script type="text/html" id="pane-template">
+			<li data-bind="pane: true">
+				<header>
+					<h1 data-bind="text: title"></h1>
+					<ul class="board-toolbar pane-tools">
+						<li data-bind="pluginEditor: {operation: 'add', type: 'widget'}">
+							<i class="icon-plus icon-white"></i>
+						</li>
+						<li data-bind="pluginEditor: {operation: 'edit', type: 'pane'}">
+							<i class="icon-wrench icon-white"></i>
+						</li>
+						<li data-bind="pluginEditor: {operation: 'delete', type: 'pane'}">
+							<i class="icon-trash icon-white"></i>
+						</li>
+					</ul>
+				</header>
+				<section data-bind="foreach: widgets">
+					<div class="sub-section" data-bind="css: 'sub-section-height-' + height()">
+						<div class="widget" data-bind="widget: true, css:{fillsize:fillSize}"></div>
+						<div class="sub-section-tools">
+							<ul class="board-toolbar">
+								<!-- ko if:$parent.widgetCanMoveUp($data) -->
+								<li data-bind="click:$parent.moveWidgetUp"><i class="icon-chevron-up icon-white icon-grey" ></i></li>
+								<!-- /ko -->
+								<!-- ko if:$parent.widgetCanMoveDown($data) -->
+								<li data-bind="click:$parent.moveWidgetDown"><i class="icon-chevron-down icon-white icon-grey" ></i></li>
+								<!-- /ko -->
+								<li data-bind="pluginEditor: {operation: 'edit', type: 'widget'}"><i class="icon-wrench icon-white icon-grey" ></i></li>
+								<li data-bind="pluginEditor: {operation: 'delete', type: 'widget'}"><i class="icon-trash icon-white icon-grey" ></i></li>
+							</ul>
+						</div>
+					</div>
+				</section>
+			</li>
+		</script>
+	</body>
+</html>
